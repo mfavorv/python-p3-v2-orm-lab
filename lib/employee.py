@@ -3,7 +3,6 @@ from __init__ import CURSOR, CONN
 from department import Department
 
 class Employee:
-
     # Dictionary of objects saved to the database.
     all = {}
 
@@ -42,7 +41,7 @@ class Employee:
             self._job_title = job_title
         else:
             raise ValueError(
-                "job_title must be a non-empty string"
+                "Job title must be a non-empty string"
             )
 
     @property
@@ -55,7 +54,7 @@ class Employee:
             self._department_id = department_id
         else:
             raise ValueError(
-                "department_id must reference a department in the database")
+                "Department ID must reference a department in the database")
 
     @classmethod
     def create_table(cls):
@@ -88,7 +87,6 @@ class Employee:
                 INSERT INTO employees (name, job_title, department_id)
                 VALUES (?, ?, ?)
         """
-
         CURSOR.execute(sql, (self.name, self.job_title, self.department_id))
         CONN.commit()
 
@@ -114,7 +112,6 @@ class Employee:
             DELETE FROM employees
             WHERE id = ?
         """
-
         CURSOR.execute(sql, (self.id,))
         CONN.commit()
 
@@ -156,9 +153,7 @@ class Employee:
             SELECT *
             FROM employees
         """
-
         rows = CURSOR.execute(sql).fetchall()
-
         return [cls.instance_from_db(row) for row in rows]
 
     @classmethod
@@ -169,7 +164,6 @@ class Employee:
             FROM employees
             WHERE id = ?
         """
-
         row = CURSOR.execute(sql, (id,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
@@ -181,10 +175,20 @@ class Employee:
             FROM employees
             WHERE name is ?
         """
-
         row = CURSOR.execute(sql, (name,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
     def reviews(self):
         """Return list of reviews associated with current employee"""
-        pass
+        from review import Review
+
+        sql = """
+            SELECT * FROM reviews WHERE employee_id = ?
+        """
+        rows = CURSOR.execute(sql, (self.id,)).fetchall()
+
+        reviews = []
+        for row in rows:
+            review = Review.instance_from_db(row)
+            reviews.append(review)
+        return reviews
